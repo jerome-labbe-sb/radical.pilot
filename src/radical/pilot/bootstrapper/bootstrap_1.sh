@@ -1229,6 +1229,19 @@ while getopts "a:b:cd:e:f:h:i:m:p:r:s:t:v:w:x" OPTION; do
     esac
 done
 
+# Unhold condor
+# TODO: Move earlier, because if pre_bootstrap fails, this is not yet set
+LOGFILES_TARBALL="$PILOTID.log.tgz"
+PROFILES_TARBALL="$PILOTID.prof.tgz"
+
+# some backends (condor) never finalize a job when output files are missing --
+# so we touch them here to prevent that
+echo "# -------------------------------------------------------------------"
+echo 'touching output tarballs'
+echo "# -------------------------------------------------------------------"
+touch "$LOGFILES_TARBALL"
+touch "$PROFILES_TARBALL"
+
 # FIXME: By now the pre_process rules are already performed.
 #        We should split the parsing and the execution of those.
 #        "bootstrap start" is here so that $PILOTID is known.
@@ -1526,7 +1539,6 @@ then
     echo "# -------------------------------------------------------------------"
     echo "#"
     echo "# Tarring profiles ..."
-    PROFILES_TARBALL="$PILOTID.prof.tgz"
     tar -czf $PROFILES_TARBALL *.prof
     ls -l $PROFILES_TARBALL
     echo "#"
@@ -1541,7 +1553,6 @@ then
     echo "# -------------------------------------------------------------------"
     echo "#"
     echo "# Tarring logfiles ..."
-    LOGFILES_TARBALL="$PILOTID.log.tgz"
     tar -czf $LOGFILES_TARBALL *.{log,out,err,cfg}
     ls -l $LOGFILES_TARBALL
     echo "#"
