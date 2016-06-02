@@ -59,6 +59,7 @@ _info_states = [
         ]
 
 _info_entries = [
+    # info,              name,                     event,       msg
     ('umgr_get_u',      'MainThread',             'advance',   'New'),
     ('umgr_adv_u_pend', 'MainThread',             'advance',   'PendingInputStaging'),
     ('usic_get_u',      'InputFileTransfer',      'advance',   'StagingInput'),
