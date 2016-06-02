@@ -580,6 +580,12 @@ def bootstrap_3():
                 mongo_p.update({"_id": pilot_id},
                                {"$set": {"lm_info": lrms.lm_info['version_info']}})
 
+            # OSG Specific
+            osg_resource_name = os.environ.get('GLIDEIN_ResourceName')
+            if osg_resource_name:
+                mongo_p.update({"_id": pilot_id},
+                               {"$set": {"osg_resource_name": osg_resource_name}})
+
         # we now have correct bridge addresses added to the agent_0.cfg, and all
         # other agents will have picked that up from their config files -- we
         # can start the agent and all its components!
