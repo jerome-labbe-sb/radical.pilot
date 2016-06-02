@@ -28,6 +28,7 @@
     "task_launch_method": "FORK",
     "pre_bootstrap_1": [
       "source /cvmfs/oasis.opensciencegrid.org/osg/modules/lmod/current/init/bash",
+      "source /cvmfs/oasis.opensciencegrid.org/osg-software/osg-wn-client/3.2/current/el6-x86_64/setup.sh",
       "module load python/2.7"
     ],
     "rp_version": "debug",
