@@ -70,6 +70,7 @@ TRANSFER = 'Transfer' # saga remote transfer TODO: This might just be a special 
 # Flags
 #
 CREATE_PARENTS = 'CreateParents'  # Create parent directories while writing file
+FATAL          = 'Fatal'          # Fail unit if staging fails
 SKIP_FAILED    = 'SkipFailed'     # Don't stage out files if tasks failed
 
 #
@@ -77,6 +78,6 @@ SKIP_FAILED    = 'SkipFailed'     # Don't stage out files if tasks failed
 #
 DEFAULT_ACTION   = TRANSFER
 DEFAULT_PRIORITY = 0
-DEFAULT_FLAGS    = [CREATE_PARENTS, SKIP_FAILED]
+DEFAULT_FLAGS    = [CREATE_PARENTS, SKIP_FAILED, FATAL]
 STAGING_AREA     = 'staging_area'
 
