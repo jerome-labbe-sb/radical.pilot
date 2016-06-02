@@ -133,16 +133,20 @@ def fetch_profiles (sid, dburl=None, client=None, tgt=None, access=None,
 
         # We now have a local tarball
         if tarball_available:
-            print "Extracting tarball %s into '%s'." % (ftgt.path, tgt_url.path)
-            tarball = tarfile.open(ftgt.path)
-            tarball.extractall("%s/%s" % (tgt_url.path, pilot['_id']))
+            try:
+                print "Extracting tarball %s into '%s'." % (ftgt.path, tgt_url.path)
+                tarball = tarfile.open(ftgt.path)
+                tarball.extractall("%s/%s" % (tgt_url.path, pilot['_id']))
 
-            profiles = glob.glob("%s/%s/*.prof" % (tgt_url.path, pilot['_id']))
-            print "Tarball %s extracted to '%s/%s/'." % (ftgt.path, tgt_url.path, pilot['_id'])
-            ret.extend(profiles)
+                profiles = glob.glob("%s/%s/*.prof" % (tgt_url.path, pilot['_id']))
+                print "Tarball %s extracted to '%s/%s/'." % (ftgt.path, tgt_url.path, pilot['_id'])
+                ret.extend(profiles)
 
-            # If extract succeeded, no need to fetch individual profiles
-            continue
+                # If extract succeeded, no need to fetch individual profiles
+                continue
+            except:
+                logger.report.warn("Empty tarball, skipping\n")
+                continue
 
         # If we dont have a tarball (for whichever reason), fetch individual profiles
         profiles = sandbox.list('*.prof')
