@@ -177,8 +177,10 @@ class Default(AgentStagingOutputComponent):
                     rpu.rec_makedir(os.path.dirname(target))
                     shutil.move(abs_source, target)
                 elif directive['action'] == rpc.TRANSFER:
+                    src_url = saga.Url(abs_source)
+                    src_url.schema = 'file'
                     srm_dir = saga.filesystem.Directory('srm://proxy/?SFN=bogus')
-                    srm_dir.copy(abs_source, target)
+                    srm_dir.copy(src_url, target)
 
                 self._prof.prof('end', uid=cu['_id'], msg=str(directive['_id']))
 

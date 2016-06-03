@@ -147,7 +147,9 @@ class Default(AgentStagingInputComponent):
                 elif directive['action'] == rpc.TRANSFER:
                     srm_dir = saga.filesystem.Directory('srm://proxy/?SFN=bogus')
                     if srm_dir.exists(source):
-                        srm_dir.copy(source, abs_target)
+                        tgt_url = saga.Url(abs_target)
+                        tgt_url.schema = 'file'
+                        srm_dir.copy(source, tgt_url)
                     else:
                         raise saga.exceptions.DoesNotExist("%s does not exist" % source)
 
