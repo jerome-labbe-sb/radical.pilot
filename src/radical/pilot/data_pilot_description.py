@@ -99,7 +99,7 @@ class DataPilotDescription(attributes.Attributes):
 
     # -------------------------------------------------------------------------
     #
-    def __init__(self):
+    def __init__(self, from_dict=None):
 
         # initialize attributes
         attributes.Attributes.__init__(self)
@@ -125,12 +125,12 @@ class DataPilotDescription(attributes.Attributes):
         self.set_attribute (ACCESS_SCHEMA,    None)
         self.set_attribute (RUNTIME,          None)
         self.set_attribute (SANDBOX,          None)
-        self.set_attribute (CORES,            None)
-        self.set_attribute (MEMORY,           None)
-        self.set_attribute (QUEUE,            None)
-        self.set_attribute (PROJECT,          None)
         self.set_attribute (CLEANUP,          None)
         self.set_attribute (_CONFIG,          None)
+
+        # apply initialization dict
+        if from_dict:
+            self.from_dict(from_dict)
 
 
     # -------------------------------------------------------------------------

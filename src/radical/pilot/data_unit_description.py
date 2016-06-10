@@ -6,7 +6,7 @@
    :synopsis: Implementation of the DataUnitDescription class.
 """
 
-__copyright__ = "Copyright 2013-2014, http://radical.rutgers.edu"
+__copyright__ = "Copyright 2013-2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
 import saga.attributes as attributes
@@ -21,7 +21,7 @@ LIFETIME               = 'lifetime'
 
 # ------------------------------------------------------------------------------
 #
-class DataUnitDescription(attributes.Attributes) :
+class DataUnitDescription(attributes.Attributes):
     """
     A DataUnitDescription object describes the requirements and 
     properties of a :class:`radical.pilot.DataUnit` and is passed as a parameter to
@@ -58,7 +58,7 @@ class DataUnitDescription(attributes.Attributes) :
        upon termination. (`bool`) [`optional`]
 
     """
-    def __init__(self):
+    def __init__(self, from_dict=None):
 
         # initialize attributes
         attributes.Attributes.__init__(self)
@@ -69,19 +69,33 @@ class DataUnitDescription(attributes.Attributes) :
 
         # register properties with the attribute interface
         # action description
-        self._attributes_register(NAME     , None, attributes.STRING, attributes.SCALAR, attributes.WRITEABLE)
-        self._attributes_register(SIZE     , None, attributes.INT   , attributes.SCALAR, attributes.WRITEABLE)
+        self._attributes_register(NAME,      None, attributes.STRING, attributes.SCALAR, attributes.WRITEABLE)
+        self._attributes_register(SIZE,      None, attributes.INT,    attributes.SCALAR, attributes.WRITEABLE)
         self._attributes_register(FILE_URLS, None, attributes.STRING, attributes.VECTOR, attributes.WRITEABLE)
-        self._attributes_register(CLEANUP  , None, attributes.BOOL  , attributes.SCALAR, attributes.WRITEABLE)
-        self._attributes_register(LIFETIME , None, attributes.INT   , attributes.SCALAR, attributes.WRITEABLE)
+        self._attributes_register(CLEANUP,   None, attributes.BOOL,   attributes.SCALAR, attributes.WRITEABLE)
+        self._attributes_register(LIFETIME,  None, attributes.INT,    attributes.SCALAR, attributes.WRITEABLE)
 
         # explicitly set attrib defaults so they get listed and included via as_dict()
-        self.set_attribute (NAME     , None)
-        self.set_attribute (SIZE     , None)
-        self.set_attribute (FILE_URLS, None)
-        self.set_attribute (CLEANUP  , None)
-        self.set_attribute (LIFETIME , False)
+        self.set_attribute (NAME,           None)
+        self.set_attribute (SIZE,           0)
+        self.set_attribute (FILE_URLS,      None)
+        self.set_attribute (CLEANUP,        False)
+        self.set_attribute (LIFETIME,       0)
 
+        # apply initialization dict
+        if from_dict:
+            self.from_dict(from_dict)
+
+
+    #------------------------------------------------------------------------------
+    #
+    def __deepcopy__ (self, memo):
+
+        other = DataUnitDescription()
+
+        for key in self.list_attributes():
+            other.set_attribute(key, self.get_attribute(key))
+
+        return other
 
 # ---------------------------------------------------------------------------------
-

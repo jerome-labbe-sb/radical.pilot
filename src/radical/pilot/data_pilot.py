@@ -13,10 +13,10 @@ import os
 import time
 import saga
 
-from radical.pilot.states       import *
-from radical.pilot.logentry     import *
-from radical.pilot.exceptions   import *
-from radical.pilot.utils.logger import logger
+from .states       import *
+from .logentry     import *
+from .exceptions   import *
+from .utils        import logger
 
 from radical.pilot.staging_directives import TRANSFER, COPY, LINK, MOVE, \
     STAGING_AREA, expand_staging_directive
@@ -90,7 +90,7 @@ class DataPilot (object):
         **Returns:**
             * A unique identifier (string).
         """
-        pass
+        return self._uid
 
 
     # -------------------------------------------------------------------------
@@ -99,7 +99,7 @@ class DataPilot (object):
     def description(self):
         """Returns the pilot description the pilot was started with.
         """
-        pass
+        return self._description
 
 
     # -------------------------------------------------------------------------
@@ -223,7 +223,7 @@ class DataPilot (object):
     #
     @property
     def resource(self):
-        pass
+        return self.description.resource
 
 
     # -------------------------------------------------------------------------
@@ -262,6 +262,25 @@ class DataPilot (object):
         staging area
         """
         pass
+
+    # -------------------------------------------------------------------------
+    #
+    @staticmethod
+    def create(pilot_manager_obj, pilot_description):
+        """ PRIVATE: Create a new pilot.
+        """
+        # Create and return pilot object.
+        pilot = DataPilot()
+
+        #pilot._uid = pilot_uid
+        pilot._description = pilot_description
+        pilot._manager = pilot_manager_obj
+
+        # Pilots use the worker of their parent manager.
+        pilot._worker = pilot._manager._worker
+
+        #logger.info("Created new DataPilot %s" % str(pilot))
+        return pilot
 
 
 # ------------------------------------------------------------------------------

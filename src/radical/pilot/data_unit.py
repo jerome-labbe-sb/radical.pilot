@@ -15,19 +15,18 @@ import time
 
 import radical.utils as ru
 
-from radical.pilot.utils.logger import logger
 
-from radical.pilot.states      import *
-from radical.pilot.logentry    import *
-from radical.pilot.exceptions  import *
-from radical.pilot.db.database import COMMAND_CANCEL_COMPUTE_UNIT
-
-from radical.pilot.staging_directives import expand_staging_directive
+from .states      import *
+from .logentry    import *
+from .exceptions  import *
+from .utils import logger
+from .db.database import COMMAND_CANCEL_COMPUTE_UNIT
+from .staging_directives import expand_staging_directive
 
 # -----------------------------------------------------------------------------
 #
 class DataUnit(object):
-""" 
+    """
     A DataUnit represents a self-contained, related set of data.
     A DataUnit is defined as an immutable container for a logical group of
     "affine" data files, e. g. data that is often accessed together
@@ -54,9 +53,49 @@ class DataUnit(object):
         self._name        = None
         self._description = None
         self._manager     = None
-        self._pilot       = None
 
-        pass
+        # handle to the manager's worker
+        self._worker = None
+
+
+    #--------------------------------------------------------------------------
+    #
+    def __repr__(self):
+
+        return "%s (%-15s: %s) (%s)" % (self.uid, self.state,
+                                           self.description.name,
+                                           id(self))
+
+    # -------------------------------------------------------------------------
+    #
+    @staticmethod
+    def create(unit_manager_obj, unit_description, local_state):
+        """ PRIVATE: Create a new compute unit.
+        """
+        # create and return pilot object
+        dataunit = DataUnit()
+
+        # Make a copy of the UD to work on without side-effects.
+        ud_copy = copy.deepcopy(unit_description)
+
+        # sanity check on description
+        if not 'file_urls' in unit_description or not unit_description['file_urls']:
+            raise PilotException("ComputeUnitDescription needs file_urls member")
+
+        dataunit._description = ud_copy
+        dataunit._manager = unit_manager_obj
+        dataunit._session = unit_manager_obj._session
+        dataunit._worker = unit_manager_obj._worker
+        dataunit._uid = ru.generate_id('du.%(counter)06d',
+                                          ru.ID_CUSTOM)
+        dataunit._name = unit_description['name']
+        dataunit._pilot_ids = []
+        dataunit._local_state = local_state
+
+        dataunit._session.prof.prof('advance', msg=NEW, uid=dataunit._uid, state=NEW)
+
+
+        return dataunit
 
 
     # --------------------------------------------------------------------------
@@ -89,7 +128,6 @@ class DataUnit(object):
         pass
 
 
-
     # -------------------------------------------------------------------------
     #
     def as_dict(self):
@@ -100,7 +138,6 @@ class DataUnit(object):
             'name':              self.name,
             'state':             self.state,
             'log':               self.log,
-            'sandbox':           self.sandbox,
             'submission_time':   self.submission_time,
             'start_time':        self.start_time,
             'stop_time':         self.stop_time
@@ -162,10 +199,10 @@ class DataUnit(object):
     # -------------------------------------------------------------------------
     #
     @property
-    def pilot_id(self):
+    def pilot_ids(self):
         """Returns the pilot_id of this DataUnit.
         """
-        pass
+        return self._pilot_ids
 
 
     # -------------------------------------------------------------------------
@@ -174,7 +211,7 @@ class DataUnit(object):
     def description(self):
         """Returns the DataUnitDescription the DataUnit was started with.
         """
-        pass
+        return self._description
 
 
     # -------------------------------------------------------------------------
@@ -183,7 +220,7 @@ class DataUnit(object):
     def state(self):
         """Returns the current state of the DataUnit.
         """
-        pass
+        return self._local_state
 
 
     # -------------------------------------------------------------------------

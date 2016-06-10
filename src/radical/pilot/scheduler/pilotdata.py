@@ -13,6 +13,7 @@ __license__   = "MIT"
 
 import os 
 import pprint
+import random
 import threading
 
 from ..states   import *
@@ -20,6 +21,8 @@ from ..utils    import logger
 from ..utils    import timestamp
 
 from .interface import Scheduler
+
+from ..staging_directives import expand_staging_directive
 
 # to reduce roundtrips, we can oversubscribe a pilot, and schedule more units
 # than it can immediately execute.  Value is in %.
@@ -447,32 +450,55 @@ class PilotDataScheduler(Scheduler):
                 uid = unit.uid
                 ud  = unit.description
 
+
                 # sanity check on unit state
                 if  unit.state not in [NEW, SCHEDULING, UNSCHEDULED] :
                     raise RuntimeError ("scheduler requires NEW or UNSCHEDULED units (%s:%s)"\
                                     % (uid, unit.state))
 
-              # logger.debug ("examine unit  %s (%s cores)" % (uid, ud.cores))
-
                 for pid in self.pilots :
-
-                  # logger.debug ("        pilot %s (%s caps, state %s)" \
-                  #            % (pid, self.pilots[pid]['state'], self.pilots[pid]['caps']))
 
                     if  self.pilots[pid]['state'] in [ACTIVE] :
 
                         if  ud.cores <= self.pilots[pid]['caps'] :
                     
-                          # logger.debug ("        unit  %s fits on pilot %s" % (uid, pid))
-
                             self.pilots[pid]['caps'] -= ud.cores
                             schedule['units'][unit]   = pid
+
+                            # Populate Pilot Data entries
+                            print "cu scheduler - du(s): %s" % ud.input_data
+
+                            # Get all the DU's for the DU-ID's provided in ud.input_data
+                            dus = self.manager.get_data_units(ud.input_data)
+
+                            # Iterate over all DU's
+                            for du in dus:
+
+                                print "DU: %s available on DP_ID's: %s" % (du.uid, du.pilot_ids)
+
+                                # Pick a random DP this DU is available on
+                                dp_id = random.choice(du.pilot_ids)
+                                print "Using DU: %s on DP_ID: %s" % (du.uid, dp_id)
+                                # Iterate over all PMGR's to find the DP
+                                for pmgr in self.pmgrs:
+                                    if dp_id in pmgr.list_data_pilots():
+                                        print "DP: %s is on PMGR: %s" % (dp_id, pmgr.uid)
+                                        # Get the DP object
+                                        dp = pmgr.get_data_pilots(dp_id)
+                                        print "DP Resource: %s" % dp.resource
+
+                                        ep = dp._resource_config['filesystem_endpoint']
+                                        sd = expand_staging_directive(['%s/%s' % (ep, fu) for fu in du.description.file_urls])
+
+                                        if not unit.description.input_staging:
+                                            unit.description.input_staging = sd
+                                        else:
+                                            unit.description.input_staging.extend(sd)
 
                             # scheduled units are removed from the waitq
                             del self.waitq[uid]
                             self.runqs[pid][uid] = unit
                             break
-
 
                     # unit was not scheduled...
                     schedule['units'][unit] = None
