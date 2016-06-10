@@ -149,20 +149,26 @@ if __name__ == "__main__":
         cpdesc.runtime         = RUNTIME
         cpdesc.cleanup         = False
         cpdesc.access_schema   = resources[resource]['schema']
-        cpdesc.candidate_hosts = [#'MIT_CMS',
-                                 #'!UConn-OSG',
-                                 '!SU-OG', # No compiler
-                                 '!SU-OG-CE', #
-                                 '!SU-OG-CE1', #
-                                 #'!cinvestav',
-                                 '!CIT_CMS_T2', # Takes too long to bootstrap
-                                 '!FIU_HPCOSG_CE', # zeromq build fails
-                                 #'BU_ATLAS_Tier2',
-                                 '!UCSDT2', # cc not found
-                                 '!MWT2', # No ssh
-                                 '!SPRACE', # failing
-                                 '!GridUNESP_CENTRAL', # On hold immediately.
+        cpdesc.candidate_hosts = [
                                  #'~(HAS_CVMFS_oasis_opensciencegrid_org =?= TRUE)'
+                                 '!CIT_CMS_T2', # Takes too long to bootstrap
+                                 '!FIU_HPCOSG_CE',  # zeromq build fails
+                                 '!FLTECH', # gcc: error trying to exec 'cc1plus': execvp: No such file or directory
+                                 '!GridUNESP_CENTRAL', # On hold immediately.
+                                 '!MIT_CMS', # gcc: error trying to exec 'cc1plus': execvp: No such file or directory
+                                  # '!MWT2', # No ssh
+                                 '!Nebraska',  # zeromq build fails
+                                  # '!NPX', # No ssh
+                                  '!NUMEP-OSG',  # OASIS source failure
+                                  '!OU_OSCER_ATLAS', # /cvmfs/oasis.opensciencegrid.org/osg/modules/lmod/current/init/bash: No such file or directory
+                                  '!SMU_ManeFrame_CE',  # No mongodb connectivity
+                                  # '!SPRACE', # failing
+                                  # '!SMU_HPC', # Failed to start up, no real reason, revisit
+                                  '!SU-OG',  # No compiler
+                                  '!SU-OG-CE',  #
+                                  '!SU-OG-CE1',  #
+                                   '!UCSDT2', # cc not found / Failing because of format character ...
+                                   "!UFlorida-HPC",  # No oasis modules
                                 ]
 
         # TODO: bulk submit pilots here
