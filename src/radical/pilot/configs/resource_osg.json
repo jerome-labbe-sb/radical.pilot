@@ -41,7 +41,7 @@
       "export PB2PATH=$PATH",
       "module load python/2.7"
     ],
-    "pre_bootstrap_2"             : [
+    "pre_bootstrap_2": [
       "export HOME=$HOME",
       "export PATH=$PB2PATH",
       "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
@@ -86,5 +86,17 @@
     "virtenv": "./ve_osgconnect",
     "virtenv_mode": "create",
     "python_dist": "default"
+  },
+  "LUCILLE": {
+    "schemas": ["srm"],
+    "srm": {
+      "filesystem_endpoint": "srm://lutse1.lunet.edu:8443/srm/v2/server?SFN=/data/osg/cache/marksant"
+    }
+  },
+  "MIT_CMS": {
+    "schemas": ["srm"],
+    "srm": {
+      "filesystem_endpoint": "srm://se01.cmsaf.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms/store/user/marksant"
+    }
   }
 }
