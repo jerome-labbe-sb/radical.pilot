@@ -93,8 +93,14 @@ class PilotDataScheduler(Scheduler):
             
                 uid = unit.uid
 
-                logger.info ("[SchedulerCallback]: Computeunit %s changed to %s" % (uid, state))
+                logger.info("[SchedulerCallback]: ComputeUnit %s changed to %s" % (uid, state))
 
+                self.cb_hist[uid].append(state)
+                logger.debug("[SchedulerCallback]: unit state callback history: %s" % (self.cb_hist))
+
+                if state == UNSCHEDULED and SCHEDULING in self.cb_hist[uid]:
+                    logger.warn("[SchedulerCallback]: ComputeUnit %s with state %s already dealt with." % (uid, state))
+                    return
 
                 found_unit = False
                 if  state in [NEW, UNSCHEDULED] :
@@ -359,6 +365,7 @@ class PilotDataScheduler(Scheduler):
                     #        'SCHEDULING', this is only reached here...
                     raise RuntimeError ('Unit %s not in NEW or UNSCHEDULED state (%s)' % (unit.uid, unit.state))
 
+                self.cb_hist[uid] = []
                 self.waitq[uid] = unit
 
             # lets see what we can do about the known units...
