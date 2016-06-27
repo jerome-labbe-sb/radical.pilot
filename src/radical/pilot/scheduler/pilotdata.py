@@ -194,6 +194,19 @@ class PilotDataScheduler(Scheduler):
     
                 if  state in [ACTIVE] :
                     # the pilot is now ready to be used
+
+                    # Get OSG site
+                    pilot_info = self._dbs.get_pilots(pilot_ids=pid)
+                    if len(pilot_info) != 1:
+                        raise Exception("Should not get more (or less) than one entry back here!")
+
+                    # Resource site name
+                    try:
+                        self.pilots[pid]['osg_resource_name'] = pilot_info[0]['osg_resource_name']
+                    except KeyError:
+                        self.pilots[pid]['osg_resource_name'] = 'Unknown'
+
+                    # Trigger scheduler
                     self._reschedule (target_pid=pid)
     
                 if  state in [DONE, FAILED, CANCELED] :
@@ -310,6 +323,7 @@ class PilotDataScheduler(Scheduler):
             self.pilots[pid]['state']    = pilot.state
             self.pilots[pid]['resource'] = pilot.resource
             self.pilots[pid]['sandbox']  = pilot.sandbox
+            self.pilots[pid]['osg_resource_name'] = None
 
             if  OVERSUBSCRIPTION_RATE :
                 self.pilots[pid]['caps'] += int(OVERSUBSCRIPTION_RATE * pilot.description.cores / 100.0)
@@ -352,7 +366,7 @@ class PilotDataScheduler(Scheduler):
             for unit in units :
 
                 uid = unit.uid
-                
+
                 for pid in self.runqs :
                     if  uid in self.runqs[pid] :
                         raise RuntimeError ('Unit cannot be scheduled twice (%s)' % uid)
@@ -465,7 +479,11 @@ class PilotDataScheduler(Scheduler):
 
                 for pid in self.pilots :
 
-                    if  self.pilots[pid]['state'] in [ACTIVE] :
+                    if self.pilots[pid]['state'] in [ACTIVE]:
+
+                        if ud.candidate_hosts and \
+                           self.pilots[pid]['osg_resource_name'] not in ud.candidate_hosts:
+                            continue
 
                         if  ud.cores <= self.pilots[pid]['caps'] :
                     
