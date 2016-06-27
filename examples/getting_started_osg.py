@@ -10,10 +10,11 @@ import radical.utils as ru
 dh = ru.DebugHelper ()
 
 RUNTIME  =    60
-SLEEP    =    10
-PILOTS   =     2
+SLEEP    =    30
+PILOTS   =     3
 UNITS    =    10
 SCHED    = rp.SCHED_BACKFILLING
+#SCHED    = rp.umgr.scheduler.SCHEDULER_DIRECT
 
 resources = {
     'osg.xsede-virt-clust' : {
@@ -104,7 +105,14 @@ if __name__ == "__main__":
         for unit_count in range(0, UNITS):
             cud = rp.ComputeUnitDescription()
             cud.executable     = "/bin/sh"
-            cud.arguments      = ["-c", "echo $HOSTNAME:$OSG_HOSTNAME && sleep %d" % SLEEP]
+            #cud.pre_exec       = ["source /cvmfs/oasis.opensciencegrid.org/osg-software/osg-wn-client/3.2/current/el6-x86_64/setup.sh"]
+            #cud.arguments      = ["-c", "echo $HOSTNAME:$OSG_HOSTNAME && sleep %d" % SLEEP]
+            #cud.arguments      = ["-c", "cat TESTFILE && rev TESTFILE > OUTPUT"]
+            cud.arguments      = ["-c", "cksum *M > OUTPUT"]
+            cud.input_staging  = ["srm://cit-se.ultralight.org:8443/srm/v2/server?SFN=/mnt/hadoop/osg/osg/marksant/data/1M",
+                                  "srm://cit-se.ultralight.org:8443/srm/v2/server?SFN=/mnt/hadoop/osg/osg/marksant/data/10M",
+                                  "srm://cit-se.ultralight.org:8443/srm/v2/server?SFN=/mnt/hadoop/osg/osg/marksant/data/100M"]
+            cud.output_staging  = ["OUTPUT > srm://cit-se.ultralight.org:8443/srm/v2/server?SFN=/mnt/hadoop/osg/osg/marksant/OUTPUT"]
             cud.cores          = 1
             cuds.append(cud)
 
@@ -121,10 +129,16 @@ if __name__ == "__main__":
         pdesc.candidate_hosts = [#'MIT_CMS',
                                  #'UConn-OSG',
                                  '!SU-OG', # No compiler
+                                 '!SU-OG-CE', #
+                                 '!SU-OG-CE1', #
+                                 '!CIT_CMS_T2', # Takes too long to bootstrap
                                  '!FIU_HPCOSG_CE', # zeromq build fails
                                  #'BU_ATLAS_Tier2',
-                                 '!UCSDT2', # Failing because of format character ...
-                                 '~(HAS_CVMFS_oasis_opensciencegrid_org =?= TRUE)'
+                                 #'!UCSDT2', # Failing because of format character ...
+                                 '!MWT2', # No ssh
+                                 '!SPRACE', # failing
+                                 '!GridUNESP_CENTRAL', # On hold immediately.
+                                 #'~(HAS_CVMFS_oasis_opensciencegrid_org =?= TRUE)'
                                 ]
 
         # TODO: bulk submit pilots here

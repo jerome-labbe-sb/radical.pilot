@@ -102,23 +102,39 @@ if __name__ == "__main__":
         umgr.register_callback(wait_queue_size_cb, rp.WAIT_QUEUE_SIZE)
 
         dpds = []
-        for SE in ['MIT_CMS', 'LUCILLE']:
+        #for SE in [
+        for SE in [
+            #'MIT_CMS',
+            #'LUCILLE',
+            # Preferred SEs
+            'cinvestav',
+            "GLOW",
+            "SPRACE",
+            # "SWT2_CPB", # DEAD
+            "Nebraska",
+            "UCSDT2",
+            "UTA_SWT2"
+        ]:
             dpdesc = rp.DataPilotDescription()
             dpdesc.resource = 'osg.%s' % SE
             dpds.append(dpdesc)
 
         data_pilots = pmgr.submit_data_pilots(dpds)
 
-        dud = rp.DataUnitDescription()
-        dud.name = "test"
-        dud.file_urls = [
-            "data/1M",
-            "data/10M",
-            #"data/100M"
-        ]
+        duds = []
+        for size in [1, 10]:
+            dud = rp.DataUnitDescription()
+            dud.name = "%dM" % size
+            dud.file_urls = ["data/%dM" % size]
+            dud.size = size
+            # dud.selection = rp.SELECTION_PREFERRED
+            dud.selection = rp.SELECTION_FAST
+            # dud.selection = rp.SELECTION_RELIABLE
+            duds.append(dud)
 
-        data_unit = umgr.submit_data_units(dud, data_pilots=data_pilots, existing=True)
-        print "data unit available on data pilots: %s" % data_unit.pilot_ids
+        data_units = umgr.submit_data_units(duds, data_pilots=data_pilots, existing=True)
+        for du in data_units:
+            print "data unit: %s available on data pilots: %s" % (du.uid, du.pilot_ids)
 
         cuds = []
         for unit_count in range(0, UNITS):
@@ -135,7 +151,7 @@ if __name__ == "__main__":
                 # "srm://cit-se.ultralight.org:8443/srm/v2/server?SFN=/mnt/hadoop/osg/osg/marksant/data/100M"
             # ]
             #cud.output_staging  = ["OUTPUT > srm://cit-se.ultralight.org:8443/srm/v2/server?SFN=/mnt/hadoop/osg/osg/marksant/OUTPUT"]
-            cud.input_data     = [data_unit.uid]
+            cud.input_data     = [du.uid for du in data_units]
             cud.cores          = 1
             cuds.append(cud)
 
@@ -149,27 +165,41 @@ if __name__ == "__main__":
         cpdesc.runtime         = RUNTIME
         cpdesc.cleanup         = False
         cpdesc.access_schema   = resources[resource]['schema']
+        # cpdesc.candidate_hosts = [
+        #                          #'~(HAS_CVMFS_oasis_opensciencegrid_org =?= TRUE)'
+        #                          '!CIT_CMS_T2', # Takes too long to bootstrap
+        #                          '!FIU_HPCOSG_CE',  # zeromq build fails
+        #                          '!FLTECH', # gcc: error trying to exec 'cc1plus': execvp: No such file or directory
+        #                          '!GridUNESP_CENTRAL', # On hold immediately.
+        #                          '!MIT_CMS', # gcc: error trying to exec 'cc1plus': execvp: No such file or directory
+        #                           # '!MWT2', # No ssh
+        #                          '!Nebraska',  # zeromq build fails
+        #                           # '!NPX', # No ssh
+        #                           '!NUMEP-OSG',  # OASIS source failure
+        #                           '!OU_OSCER_ATLAS', # /cvmfs/oasis.opensciencegrid.org/osg/modules/lmod/current/init/bash: No such file or directory
+        #                           '!SMU_ManeFrame_CE',  # No mongodb connectivity
+        #                           # '!SPRACE', # failing
+        #                           # '!SMU_HPC', # Failed to start up, no real reason, revisit
+        #                           '!SU-OG',  # No compiler
+        #                           '!SU-OG-CE',  #
+        #                           '!SU-OG-CE1',  #
+        #                            '!UCSDT2', # cc not found / Failing because of format character ...
+        #                            "!UFlorida-HPC",  # No oasis modules
+        #                         ]
         cpdesc.candidate_hosts = [
-                                 #'~(HAS_CVMFS_oasis_opensciencegrid_org =?= TRUE)'
-                                 '!CIT_CMS_T2', # Takes too long to bootstrap
-                                 '!FIU_HPCOSG_CE',  # zeromq build fails
-                                 '!FLTECH', # gcc: error trying to exec 'cc1plus': execvp: No such file or directory
-                                 '!GridUNESP_CENTRAL', # On hold immediately.
-                                 '!MIT_CMS', # gcc: error trying to exec 'cc1plus': execvp: No such file or directory
-                                  # '!MWT2', # No ssh
-                                 '!Nebraska',  # zeromq build fails
-                                  # '!NPX', # No ssh
-                                  '!NUMEP-OSG',  # OASIS source failure
-                                  '!OU_OSCER_ATLAS', # /cvmfs/oasis.opensciencegrid.org/osg/modules/lmod/current/init/bash: No such file or directory
-                                  '!SMU_ManeFrame_CE',  # No mongodb connectivity
-                                  # '!SPRACE', # failing
-                                  # '!SMU_HPC', # Failed to start up, no real reason, revisit
-                                  '!SU-OG',  # No compiler
-                                  '!SU-OG-CE',  #
-                                  '!SU-OG-CE1',  #
-                                   '!UCSDT2', # cc not found / Failing because of format character ...
-                                   "!UFlorida-HPC",  # No oasis modules
-                                ]
+            # Sites with a preferred sE
+            "cinvestav",
+            #"CIT_CMS_T2", too long to run
+            "Crane", # Other site
+            "GLOW",
+            #"MIT_CMS", # see above
+            #"Nebraska", # zeromq build fails
+            # "SPRACE", No cc1plus
+            "SWT2_CPB",
+            "Tusker", # Other site
+            # "UCSDT2",
+            "UTA_SWT2"
+        ]
 
         # TODO: bulk submit pilots here
         for p in range(PILOTS):
