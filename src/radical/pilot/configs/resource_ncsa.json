@@ -47,18 +47,19 @@
             "module switch PrgEnv-cray PrgEnv-gnu",
             "module load bwpy",
             "module use --append /projects/sciteam/gkd/modules",
-            "module load openmpi"
+            "module load openmpi",
+            "export PB2PATH=$PATH"
         ],
         "pre_bootstrap_2"             : [
             "export HOME=$HOME",
-            "export PATH=$PATH",
+            "export PATH=$PB2PATH",
             "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
         ],
         "default_remote_workdir"      : "/scratch/sciteam/$USER",
         "valid_roots"                 : ["/scratch/sciteam"],
-        "rp_version"                  : "local",
+        "rp_version"                  : "installed",
         "virtenv"                     : "%(global_sandbox)s/ve_bw",
-        "virtenv_mode"                : "create",
+        "virtenv_mode"                : "use",
         "stage_cacerts"               : "True",
         "python_dist"                 : "default"
     },
