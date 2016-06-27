@@ -18,6 +18,7 @@ SIZE                   = 'size'
 FILE_URLS              = 'file_urls'
 CLEANUP                = 'cleanup'
 LIFETIME               = 'lifetime'
+SELECTION              = 'selection'
 
 # ------------------------------------------------------------------------------
 #
@@ -74,6 +75,7 @@ class DataUnitDescription(attributes.Attributes):
         self._attributes_register(FILE_URLS, None, attributes.STRING, attributes.VECTOR, attributes.WRITEABLE)
         self._attributes_register(CLEANUP,   None, attributes.BOOL,   attributes.SCALAR, attributes.WRITEABLE)
         self._attributes_register(LIFETIME,  None, attributes.INT,    attributes.SCALAR, attributes.WRITEABLE)
+        self._attributes_register(SELECTION, None, attributes.STRING, attributes.SCALAR, attributes.WRITEABLE)
 
         # explicitly set attrib defaults so they get listed and included via as_dict()
         self.set_attribute (NAME,           None)
@@ -81,6 +83,7 @@ class DataUnitDescription(attributes.Attributes):
         self.set_attribute (FILE_URLS,      None)
         self.set_attribute (CLEANUP,        False)
         self.set_attribute (LIFETIME,       0)
+        self.set_attribute (SELECTION,      None)
 
         # apply initialization dict
         if from_dict:

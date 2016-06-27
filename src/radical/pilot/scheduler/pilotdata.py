@@ -11,7 +11,9 @@
 __copyright__ = "Copyright 2016, http://radical.rutgers.edu"
 __license__   = "MIT"
 
-import os 
+import os
+import math
+import json
 import pprint
 import random
 import threading
@@ -19,6 +21,8 @@ import threading
 from ..states   import *
 from ..utils    import logger
 from ..utils    import timestamp
+from ..constants import *
+from ..exceptions import *
 
 from .interface import Scheduler
 
@@ -27,6 +31,24 @@ from ..staging_directives import expand_staging_directive
 # to reduce roundtrips, we can oversubscribe a pilot, and schedule more units
 # than it can immediately execute.  Value is in %.
 OVERSUBSCRIPTION_RATE = 0
+
+#
+# Constants
+#
+DIRECTION_INPUT = 'direction_input'
+DIRECTION_OUTPUT = 'direction_output'
+
+#
+# OSG CONFIG
+#
+OSG_CONFIG_DIR = '/Users/mark/osg-experiments/etc'
+PREFERRED_SES = 'preferred_ses.json'
+RELIABILITY_CE2SE = 'reliability_ce2se.json'
+PERFORMANCE_CE2SE = 'performance_ce2se.json'
+
+
+
+
 
 # -----------------------------------------------------------------------------
 # 
@@ -57,10 +79,26 @@ class PilotDataScheduler(Scheduler):
         self.pilots  = dict()
         self.lock    = threading.RLock ()
         self._dbs    = self.session.get_dbs()
+        self.cb_hist = {}
+
+        self._read_configs()
 
         # make sure the UM notifies us on all unit state changes
         manager.register_callback (self._unit_state_callback)
 
+    def _read_configs(self):
+
+        f = open(os.path.join(OSG_CONFIG_DIR, PREFERRED_SES))
+        self._preferred_ses = json.load(f)
+        f.close()
+
+        f = open(os.path.join(OSG_CONFIG_DIR, RELIABILITY_CE2SE))
+        self._reliable_ses = json.load(f)
+        f.close()
+
+        f = open(os.path.join(OSG_CONFIG_DIR, PERFORMANCE_CE2SE))
+        self._fast_ses = json.load(f)
+        f.close()
 
     # -------------------------------------------------------------------------
     #
@@ -412,6 +450,144 @@ class PilotDataScheduler(Scheduler):
                 # FIXME: is this is a race condition with the unit state callback
                 #        actions on the queues?
 
+    # -------------------------------------------------------------------------
+    #
+    def _select_dp(self, du, direction, cu_resource=None):
+
+        print "Selecting DP for %s." % direction
+        print "DU: %s available on DP_ID's: %s" % (du.uid, du.pilot_ids)
+
+        sel = du.description.selection
+
+        print "CU Resource: %s" % cu_resource
+
+        if sel == SELECTION_PREFERRED:
+            if cu_resource in self._preferred_ses:
+                pref = self._preferred_ses[cu_resource]
+                print "Site has a preferred SE: %s" % pref
+            else:
+                print "Site has no preferred SE."
+                pref = None
+
+            if pref:
+                for dp_id in du.pilot_ids:
+                    # Iterate over all PMGR's to find the DP
+                    for pmgr in self.pmgrs:
+                        if dp_id in pmgr.list_data_pilots():
+                            # Get the DP object
+                            dp = pmgr.get_data_pilots(dp_id)
+
+                            if dp.resource.split('.')[1] == pref:
+                                print "Preferred SE is in list of replicas: %s" % pref
+                                return dp
+
+                print "Preferred SE is not in list of replicas."
+
+            #
+            # Fallback to random selection
+            #
+
+        elif sel == SELECTION_FAST:
+            if not du.description.size:
+                raise Exception("Size not specified in DU")
+
+            def get_fast(matrix, source, size):
+
+                print "Finding fastest SE's for source: %s for size: %s" % (source, size)
+
+                try:
+                    targets = matrix[source]
+                except KeyError:
+                    return None
+                # JSON file has string key identifiers
+                # Throwing out unknown values
+                results = {x: targets[x][str(size)] for x in targets if targets[x][str(size)] != -1}
+                sites = sorted(results, key=results.get)
+                return sites
+
+            fast_sites_ordered = get_fast(self._fast_ses, cu_resource, du.description.size)
+
+            if fast_sites_ordered:
+                dps = []
+                for dp_id in du.pilot_ids:
+                    for pmgr in self.pmgrs:
+                        if dp_id in pmgr.list_data_pilots():
+                            # Get the DP object
+                            dp = pmgr.get_data_pilots(dp_id)
+                            dps.append(dp)
+
+                for site in fast_sites_ordered:
+                    print "Checking if fast site: %s is in the list of pilots ..." % site
+                    for dp in dps:
+                        if dp.resource.split('.')[1] == site:
+                            print "Selecting DP Resource: %s" % dp.resource
+                            return dp
+                        else:
+                            print "Not Selecting DP Resource: %s" % dp.resource
+
+            #
+            # Fallback to random selection
+            #
+
+        elif sel == SELECTION_RELIABLE:
+            if not du.description.size:
+                raise Exception("Size not specified in DU")
+
+            def get_reliable(matrix, source, size):
+
+                print "Finding reliable SE's for source: %s for size: %s" % (source, size)
+
+                targets = matrix[source]
+                # JSON file has string key identifiers
+                results = {x: targets[x][str(size)] for x in targets}
+                sites = sorted(results, key=results.get, reverse=True)
+                return sites
+
+            reliable_sites_ordered = get_reliable(self._reliable_ses, cu_resource, du.description.size)
+
+            dps = []
+            for dp_id in du.pilot_ids:
+                for pmgr in self.pmgrs:
+                    if dp_id in pmgr.list_data_pilots():
+                        # Get the DP object
+                        dp = pmgr.get_data_pilots(dp_id)
+                        dps.append(dp)
+
+            for site in reliable_sites_ordered:
+                print "Checking if reliable site: %s is in the list of pilots ..." % site
+                for dp in dps:
+                    if dp.resource.split('.')[1] == site:
+                        print "Selecting DP Resource: %s" % dp.resource
+                        return dp
+                    else:
+                        print "Not Selecting DP Resource: %s" % dp.resource
+
+            #
+            # Fallback to random selection
+            #
+
+        elif sel == SELECTION_RANDOM:
+            # Fallback
+            pass
+
+        else:
+            raise Exception("Selection mechanism '%s' unknown!" % sel)
+
+        #
+        # Pick a random DP this DU is available on
+        #
+        print "Going to pick random DP ..."
+        dp_id = random.choice(du.pilot_ids)
+        print "Using DU: %s on DP_ID: %s" % (du.uid, dp_id)
+        # Iterate over all PMGR's to find the DP
+        for pmgr in self.pmgrs:
+            if dp_id in pmgr.list_data_pilots():
+                print "DP: %s is on PMGR: %s" % (dp_id, pmgr.uid)
+                # Get the DP object
+                dp = pmgr.get_data_pilots(dp_id)
+                print "DP Resource: %s" % dp.resource
+
+                return dp
 
     # -------------------------------------------------------------------------
     #
@@ -499,26 +675,14 @@ class PilotDataScheduler(Scheduler):
                             # Iterate over all DU's
                             for du in dus:
 
-                                print "DU: %s available on DP_ID's: %s" % (du.uid, du.pilot_ids)
+                                dp = self._select_dp(du, DIRECTION_INPUT, self.pilots[pid]['osg_resource_name'])
+                                ep = dp._resource_config['filesystem_endpoint']
+                                sd = expand_staging_directive(['%s/%s' % (ep, fu) for fu in du.description.file_urls])
 
-                                # Pick a random DP this DU is available on
-                                dp_id = random.choice(du.pilot_ids)
-                                print "Using DU: %s on DP_ID: %s" % (du.uid, dp_id)
-                                # Iterate over all PMGR's to find the DP
-                                for pmgr in self.pmgrs:
-                                    if dp_id in pmgr.list_data_pilots():
-                                        print "DP: %s is on PMGR: %s" % (dp_id, pmgr.uid)
-                                        # Get the DP object
-                                        dp = pmgr.get_data_pilots(dp_id)
-                                        print "DP Resource: %s" % dp.resource
-
-                                        ep = dp._resource_config['filesystem_endpoint']
-                                        sd = expand_staging_directive(['%s/%s' % (ep, fu) for fu in du.description.file_urls])
-
-                                        if not unit.description.input_staging:
-                                            unit.description.input_staging = sd
-                                        else:
-                                            unit.description.input_staging.extend(sd)
+                                if not unit.description.input_staging:
+                                    unit.description.input_staging = sd
+                                else:
+                                    unit.description.input_staging.extend(sd)
 
                             # scheduled units are removed from the waitq
                             del self.waitq[uid]

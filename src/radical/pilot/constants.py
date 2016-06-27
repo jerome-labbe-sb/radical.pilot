@@ -67,11 +67,21 @@ MOVE     = 'Move'     # local mv
 TRANSFER = 'Transfer' # saga remote transfer TODO: This might just be a special case of copy
 
 #
-# Flags
+# Staging Flags
 #
 CREATE_PARENTS = 'CreateParents'  # Create parent directories while writing file
 FATAL          = 'Fatal'          # Fail unit if staging fails
 SKIP_FAILED    = 'SkipFailed'     # Don't stage out files if tasks failed
+
+#
+# PilotData
+#
+SELECTION_RANDOM    = 'random'
+SELECTION_RELIABLE  = 'reliable'
+SELECTION_FAST      = 'fast'
+SELECTION_PREFERRED = 'preferred'
+SELECTION_DEFAULT   = SELECTION_RANDOM
+
 
 #
 # Defaults
