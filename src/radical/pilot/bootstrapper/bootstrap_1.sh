@@ -265,7 +265,7 @@ rehash()
 
     if test -f 'cacert.pem'
     then
-        PIP="`which pip` --cert cacert.pem"
+        PIP="`which pip` --cert cacert.pem -v -v -v"
     else
         PIP="`which pip`"
     fi
