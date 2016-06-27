@@ -72,8 +72,8 @@ class UnitManager(object):
 
     # -------------------------------------------------------------------------
     #
-    def __init__(self, session, scheduler=None, input_transfer_workers=2,
-                 output_transfer_workers=2, report_state=True):
+    def __init__(self, session, scheduler=None, input_transfer_workers=1,
+                 output_transfer_workers=1, report_state=True):
         """Creates a new UnitManager and attaches it to the session.
 
         **Args:**
