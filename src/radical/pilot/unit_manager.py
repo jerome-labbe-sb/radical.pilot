@@ -568,7 +568,7 @@ class UnitManager(object):
         if  len(unscheduled) :
             self._worker.unschedule_compute_units (units=unscheduled)
 
-        logger.info ('%s units remain unscheduled' % len(unscheduled))
+        logger.info ('%s units remain unscheduled (%s)' % (len(unscheduled), unscheduled))
 
 
     # -------------------------------------------------------------------------
