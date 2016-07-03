@@ -106,21 +106,25 @@ class Spark(LaunchMethod):
                 scala_home = os.getcwd() + '/scala-2.10.4'
                 os.system('cd')
 
+            logger.debug("LRMS CONFIG HOOK NODE LIST: %s",lrms.node_list)
+            logger.debug('HOSTNAME: %s',subprocess.check_output('/bin/hostname'))
+            try:
+                if lrms.node_list[0]!='localhost':
+                    hostname = subprocess.check_output('/bin/hostname').split(lrms.node_list[0])[1].split('\n')[0]
+                else:
+                    hostname = None
+            except:
+                hostname = None
 
-            if lrms.node_list[0]!='localhost':
-                hostname = subprocess.check_output('/bin/hostname').split(lrms.node_list[0])[1].split('\n')[0]
-
-            else:
-                hostname = ''
 
             spark_conf_slaves = open(spark_home+"/conf/slaves",'w')
 
             if len(lrms.node_list) == 1:
-                spark_conf_slaves.write(lrms.node_list[0]+hostname)
+                spark_conf_slaves.write(lrms.node_list[0])
                 spark_conf_slaves.write('\n')
             else:
                 for nodename in lrms.node_list[1:]:
-                    spark_conf_slaves.write(nodename+hostname)
+                    spark_conf_slaves.write(nodename)
                     spark_conf_slaves.write('\n')
 
             spark_conf_slaves.close()
@@ -130,12 +134,12 @@ class Spark(LaunchMethod):
             python_path = os.getenv('PYTHONPATH')
             python = ru.which('python')
             logger.info('Python Executable: %s' % python)
-            master_ip = lrms.node_list[0]+hostname
+            master_ip = lrms.node_list[0]
 
             #Setup default env properties:
             spark_default_file = open(spark_home + "/conf/spark-defaults.conf",'w')
-            spark_master_string = 'spark://%s:7077' % master_ip
-            spark_default_file.write('spark.master  ' + spark_master_string + '\n')
+            spark_master = 'spark://%s:7077' % master_ip
+            spark_default_file.write('spark.master  ' + spark_master + '\n')
             spark_default_file.close()
             logger.info("Let's print the config")
             logger.info('Config : {0}'.format(cfg['resource_cfg']))
@@ -170,6 +174,14 @@ class Spark(LaunchMethod):
         # dict.  That lm_info dict will be attached to the scheduler's lrms_info
         # dict, and will be passed around as part of the opaque_slots structure,
         # so it is available on all LM create_command calls.
+
+        # Not all resources return allow to connect to a compute node or use the
+        # scheme <node name>.<resource> for the compute nodes.
+        if hostname:
+            spark_master_string = 'spark://%s:7077' % (master_ip + hostname)
+        else:
+            spark_master_string = None
+
         lm_info = {'spark_home'    : spark_home,
                    'master_ip'     : master_ip,
                    'lm_detail'     : spark_master_string,
