@@ -312,6 +312,16 @@ class LaunchMethod(object):
                     # ignore empty args
                     continue
 
+                if len(arg) == 1:
+                    # Don't quote single char arguments, i.e. '>'
+                    arg_string += '%s ' % arg
+                    continue
+
+                if '*' in arg:
+                    # Don't quote arguments with wildcards
+                    arg_string += '%s ' % arg
+                    continue
+
                 arg = arg.replace('"', '\\"')    # Escape all double quotes
                 if arg[0] == arg[-1] == "'" :    # If a string is between outer single quotes,
                     arg_string += '%s ' % arg    # ... pass it as is.
