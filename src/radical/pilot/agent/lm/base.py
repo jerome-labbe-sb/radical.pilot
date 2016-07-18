@@ -312,8 +312,8 @@ class LaunchMethod(object):
                     # ignore empty args
                     continue
 
-                if len(arg) == 1:
-                    # Don't quote single char arguments, i.e. '>'
+                if arg in ['>', '>>', '<', '<<', '|', '||', '&&', '&']:
+                    # Don't quote shell direction arguments, etc.
                     arg_string += '%s ' % arg
                     continue
 
