@@ -133,12 +133,11 @@ class PilotDataScheduler(Scheduler):
 
                 logger.info("[SchedulerCallback]: ComputeUnit %s changed to %s" % (uid, state))
 
-                self.cb_hist[uid].append(state)
                 logger.debug("[SchedulerCallback]: unit state callback history: %s" % (self.cb_hist))
-
                 if state == UNSCHEDULED and SCHEDULING in self.cb_hist[uid]:
                     logger.warn("[SchedulerCallback]: ComputeUnit %s with state %s already dealt with." % (uid, state))
                     return
+                self.cb_hist[uid].append(state)
 
                 found_unit = False
                 if  state in [NEW, UNSCHEDULED] :
