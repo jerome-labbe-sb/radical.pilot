@@ -32,6 +32,7 @@ STDOUT                 = 'stdout'
 STDERR                 = 'stderr'
 RESTARTABLE            = 'restartable'
 INPUT_DATA             = 'input_data'
+OUTPUT_DATA            = 'output_data'
 
 # ------------------------------------------------------------------------------
 #
@@ -171,7 +172,7 @@ class ComputeUnitDescription(attributes.Attributes) :
 
         # pilot data
         self._attributes_register(INPUT_DATA,       None, attributes.ANY,    attributes.VECTOR, attributes.WRITEABLE)
-        # self._attributes_register('output_data', 'output_staging', flow=self._DOWN)
+        self._attributes_register(OUTPUT_DATA,      None, attributes.ANY,    attributes.VECTOR, attributes.WRITEABLE)
 
         # explicitly set attrib defaults so they get listed and included via as_dict()
         self.set_attribute (KERNEL,          None)
@@ -186,6 +187,7 @@ class ComputeUnitDescription(attributes.Attributes) :
         self.set_attribute (INPUT_STAGING,   None)
         self.set_attribute (OUTPUT_STAGING,  None)
         self.set_attribute (INPUT_DATA,      None)
+        self.set_attribute (OUTPUT_DATA,     None)
         self.set_attribute (CANDIDATE_HOSTS, None)
         self.set_attribute (CORES,              1)
         self.set_attribute (MPI,            False)

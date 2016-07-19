@@ -672,17 +672,39 @@ class PilotDataScheduler(Scheduler):
                             # Get all the DU's for the DU-ID's provided in ud.input_data
                             dus = self.manager.get_data_units(ud.input_data)
 
-                            # Iterate over all DU's
+                            # Iterate over all input DU's
                             for du in dus:
 
                                 dp = self._select_dp(du, DIRECTION_INPUT, self.pilots[pid]['osg_resource_name'])
                                 ep = dp._resource_config['filesystem_endpoint']
                                 sd = expand_staging_directive(['%s/%s' % (ep, fu) for fu in du.description.file_urls])
+                                for s in sd:
+                                    # TODO: need proper conditional here
+                                    s['action'] = COPY
+                                print 'input sd: %s' % sd
 
                                 if not unit.description.input_staging:
                                     unit.description.input_staging = sd
                                 else:
                                     unit.description.input_staging.extend(sd)
+
+                            # Get all the DU's for the DU-ID's provided in ud.output_data
+                            dus = self.manager.get_data_units(ud.output_data)
+
+                            # Iterate over all output DU's
+                            for du in dus:
+                                dp = self._select_dp(du, DIRECTION_OUTPUT, self.pilots[pid]['osg_resource_name'])
+                                ep = dp._resource_config['filesystem_endpoint']
+                                sd = expand_staging_directive(['%s > %s/%s' % (fu, ep, fu) for fu in du.description.file_urls])
+                                for s in sd:
+                                    # TODO: need proper conditional here
+                                    s['action'] = COPY
+                                print 'output sd: %s' % sd
+
+                                if not unit.description.output_staging:
+                                    unit.description.output_staging = sd
+                                else:
+                                    unit.description.output_staging.extend(sd)
 
                             # scheduled units are removed from the waitq
                             del self.waitq[uid]
