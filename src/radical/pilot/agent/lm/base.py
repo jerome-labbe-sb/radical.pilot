@@ -317,7 +317,7 @@ class LaunchMethod(object):
                     arg_string += '%s ' % arg
                     continue
 
-                if '*' in arg:
+                if any([c in arg for c in ['?', '*']]):
                     # Don't quote arguments with wildcards
                     arg_string += '%s ' % arg
                     continue
