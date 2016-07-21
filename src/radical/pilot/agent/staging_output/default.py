@@ -159,6 +159,11 @@ class Default(AgentStagingOutputComponent):
                 # Get the source from the directive and convert it to the location
                 # in the workdir
                 source = str(directive['source'])
+
+                # TODO: this excludes directories inside the unit dir,
+                # but simplifies matters from an application perspective
+                source = os.path.basename(source)
+
                 abs_source = os.path.join(workdir, source)
 
                 self._log.info("Going to '%s' %s to %s", directive['action'], abs_source, target)
