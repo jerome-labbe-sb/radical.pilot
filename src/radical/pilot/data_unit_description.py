@@ -15,7 +15,7 @@ import saga.attributes as attributes
 # Attribute description keys
 NAME                   = 'name'
 SIZE                   = 'size'
-FILE_URLS              = 'file_urls'
+FILES                  = 'files'
 CLEANUP                = 'cleanup'
 LIFETIME               = 'lifetime'
 SELECTION              = 'selection'
@@ -29,7 +29,7 @@ class DataUnitDescription(attributes.Attributes):
     :meth:`radical.pilot.UnitManager.submit_units` to instantiate a new 
     DataUnit.
 
-    .. note:: A DataUnitDescription **MUST** define at least :data:`file_urls`.
+    .. note:: A DataUnitDescription **MUST** define at least :data:`files`.
 
     **Example**::
 
@@ -43,7 +43,7 @@ class DataUnitDescription(attributes.Attributes):
 
        (`Attribute`) The number of bytes estimated to be required. (`int`) [`optional`].
 
-    .. data:: file_urls
+    .. data:: files
 
        (`Attribute`) a set of files associated with this data unit. (`list of
        strings`) [`mandatory`].
@@ -72,7 +72,7 @@ class DataUnitDescription(attributes.Attributes):
         # action description
         self._attributes_register(NAME,      None, attributes.STRING, attributes.SCALAR, attributes.WRITEABLE)
         self._attributes_register(SIZE,      None, attributes.INT,    attributes.SCALAR, attributes.WRITEABLE)
-        self._attributes_register(FILE_URLS, None, attributes.STRING, attributes.VECTOR, attributes.WRITEABLE)
+        self._attributes_register(FILES,     None, attributes.STRING, attributes.VECTOR, attributes.WRITEABLE)
         self._attributes_register(CLEANUP,   None, attributes.BOOL,   attributes.SCALAR, attributes.WRITEABLE)
         self._attributes_register(LIFETIME,  None, attributes.INT,    attributes.SCALAR, attributes.WRITEABLE)
         self._attributes_register(SELECTION, None, attributes.STRING, attributes.SCALAR, attributes.WRITEABLE)
@@ -80,7 +80,7 @@ class DataUnitDescription(attributes.Attributes):
         # explicitly set attrib defaults so they get listed and included via as_dict()
         self.set_attribute (NAME,           None)
         self.set_attribute (SIZE,           0)
-        self.set_attribute (FILE_URLS,      None)
+        self.set_attribute (FILES,          None)
         self.set_attribute (CLEANUP,        False)
         self.set_attribute (LIFETIME,       0)
         self.set_attribute (SELECTION,      None)

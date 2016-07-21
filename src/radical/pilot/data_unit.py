@@ -79,8 +79,8 @@ class DataUnit(object):
         ud_copy = copy.deepcopy(unit_description)
 
         # sanity check on description
-        if not 'file_urls' in unit_description or not unit_description['file_urls']:
-            raise PilotException("ComputeUnitDescription needs file_urls member")
+        if not 'files' in unit_description or not unit_description['files']:
+            raise PilotException("ComputeUnitDescription needs files member")
 
         dataunit._description = ud_copy
         dataunit._manager = unit_manager_obj
