@@ -679,7 +679,10 @@ class PilotManager(object):
             path = pd['path']
             if path:
                 ep_url = ru.Url(resource_cfg['filesystem_endpoint'])
-                ep_url.path = os.path.join(ep_url.path, path)
+                if ep_url.schema == 'srm':
+                    ep_url.query = os.path.join(ep_url.query, path)
+                else:
+                    ep_url.path = os.path.join(ep_url.path, path)
                 resource_cfg['filesystem_endpoint'] = str(ep_url)
 
             # After the sanity checks have passed, we can register a pilot
