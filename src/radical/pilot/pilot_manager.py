@@ -674,6 +674,14 @@ class PilotManager(object):
                     # resource config
                     resource_cfg[key] = resource_cfg[schema][key]
 
+            # Override path component of EP if specified in PD
+            # Supports relative paths and absolute paths
+            path = pd['path']
+            if path:
+                ep_url = ru.Url(resource_cfg['filesystem_endpoint'])
+                ep_url.path = os.path.join(ep_url.path, path)
+                resource_cfg['filesystem_endpoint'] = str(ep_url)
+
             # After the sanity checks have passed, we can register a pilot
             # startup request with the worker process and create a facade
             # object.
