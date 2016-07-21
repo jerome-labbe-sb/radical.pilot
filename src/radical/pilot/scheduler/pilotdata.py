@@ -26,6 +26,8 @@ from ..exceptions import *
 
 from .interface import Scheduler
 
+import radical.utils as ru
+
 from ..staging_directives import expand_staging_directive
 
 # to reduce roundtrips, we can oversubscribe a pilot, and schedule more units
@@ -676,11 +678,15 @@ class PilotDataScheduler(Scheduler):
 
                                 dp = self._select_dp(du, DIRECTION_INPUT, self.pilots[pid]['osg_resource_name'])
                                 ep = dp._resource_config['filesystem_endpoint']
-                                sd = expand_staging_directive(['%s/%s' % (ep, fu) for fu in du.description.file_urls])
+                                if du._existing:
+                                    sd = expand_staging_directive(['%s/%s' % (ep, fu) for fu in du.description.files])
+                                else:
+                                    sd = expand_staging_directive(['%s/%s/%s' % (ep, du.uid, fu) for fu in du.description.files])
+
+                                # In case the source is a file://, change the action to copy
                                 for s in sd:
-                                    # TODO: need proper conditional here
-                                    s['action'] = COPY
-                                print 'input sd: %s' % sd
+                                    if ru.Url(s['source']).schema == 'file':
+                                        s['action'] = COPY
 
                                 if not unit.description.input_staging:
                                     unit.description.input_staging = sd
@@ -694,11 +700,12 @@ class PilotDataScheduler(Scheduler):
                             for du in dus:
                                 dp = self._select_dp(du, DIRECTION_OUTPUT, self.pilots[pid]['osg_resource_name'])
                                 ep = dp._resource_config['filesystem_endpoint']
-                                sd = expand_staging_directive(['%s > %s/%s' % (fu, ep, fu) for fu in du.description.file_urls])
+                                sd = expand_staging_directive(['%s > %s/%s/%s' % (fu, ep, du.uid, fu) for fu in du.description.files])
+
+                                # In case the target is a file://, change the action to copy
                                 for s in sd:
-                                    # TODO: need proper conditional here
-                                    s['action'] = COPY
-                                print 'output sd: %s' % sd
+                                    if ru.Url(s['target']).schema == 'file':
+                                        s['action'] = COPY
 
                                 if not unit.description.output_staging:
                                     unit.description.output_staging = sd

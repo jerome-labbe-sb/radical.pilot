@@ -53,6 +53,7 @@ class DataUnit(object):
         self._name        = None
         self._description = None
         self._manager     = None
+        self._existing    = None
 
         # handle to the manager's worker
         self._worker = None

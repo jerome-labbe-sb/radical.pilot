@@ -836,10 +836,10 @@ class UnitManager(object):
 
             u = DataUnit.create(unit_description=ud, unit_manager_obj=self, local_state=SCHEDULING)
             u._pilot_ids = [p.uid for p in data_pilots]
+            u._existing = existing
             units.append(u)
 
             self._data_units[u.uid] = u
-
 
             logger.report.progress()
 
