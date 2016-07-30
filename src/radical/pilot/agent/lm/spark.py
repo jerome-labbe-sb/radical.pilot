@@ -107,14 +107,6 @@ class Spark(LaunchMethod):
                 os.system('cd')
 
             logger.debug("LRMS CONFIG HOOK NODE LIST: %s",lrms.node_list)
-            logger.debug('HOSTNAME: %s',subprocess.check_output('/bin/hostname'))
-            try:
-                if lrms.node_list[0]!='localhost':
-                    hostname = subprocess.check_output('/bin/hostname').split(lrms.node_list[0])[1].split('\n')[0]
-                else:
-                    hostname = None
-            except:
-                hostname = None
 
 
             spark_conf_slaves = open(spark_home+"/conf/slaves",'w')
@@ -169,6 +161,15 @@ class Spark(LaunchMethod):
             launch_command = spark_home +'/bin'
 
           
+        hostname = None
+        try:
+            if lrms.node_list[0]!='localhost':
+                hostname = subprocess.check_output('/bin/hostname').split(lrms.node_list[0])[1].split('\n')[0]
+        except:
+            pass
+        
+        logger.debug('HOSTNAME: %s', hostname)
+
         # The LRMS instance is only available here -- everything which is later
         # needed by the scheduler or launch method is stored in an 'lm_info'
         # dict.  That lm_info dict will be attached to the scheduler's lrms_info
