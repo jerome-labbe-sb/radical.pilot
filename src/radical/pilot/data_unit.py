@@ -208,6 +208,13 @@ class DataUnit(object):
 
     # -------------------------------------------------------------------------
     #
+    @pilot_ids.setter
+    def pilot_ids(self, value):
+        self._pilot_ids = value
+
+
+    # -------------------------------------------------------------------------
+    #
     @property
     def description(self):
         """Returns the DataUnitDescription the DataUnit was started with.
