@@ -701,6 +701,7 @@ class PilotDataScheduler(Scheduler):
                             # Iterate over all output DU's
                             for du in dus:
                                 dp = self._select_dp(du, DIRECTION_OUTPUT, self.pilots[pid]['osg_resource_name'])
+                                du.pilot_ids = [dp.uid]
                                 ep = dp._resource_config['filesystem_endpoint']
                                 sd = expand_staging_directive(['%s > %s/tmp/%s/%s/%s' % (fu, ep, self.session.uid, du.uid, fu) for fu in du.description.files])
 
