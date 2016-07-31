@@ -532,6 +532,49 @@ class PilotDataScheduler(Scheduler):
             # Fallback to random selection
             #
 
+
+        elif sel == SELECTION_SLOW:
+            if not du.description.size:
+                raise Exception("Size not specified in DU %s." % du.description)
+
+            def get_slow(matrix, source, size):
+
+                print "Finding slowest SE's for source: %s for size: %s" % (source, size)
+
+                try:
+                    targets = matrix[source]
+                except KeyError:
+                    return None
+                # JSON file has string key identifiers
+                # Throwing out unknown values
+                results = {x: targets[x][str(size)] for x in targets if targets[x][str(size)] != -1}
+                sites = sorted(results, key=results.get, reverse=True)
+                return sites
+
+            slow_sites_ordered = get_slow(self._fast_ses, cu_resource, du.description.size)
+
+            if slow_sites_ordered:
+                dps = []
+                for dp_id in du.pilot_ids:
+                    for pmgr in self.pmgrs:
+                        if dp_id in pmgr.list_data_pilots():
+                            # Get the DP object
+                            dp = pmgr.get_data_pilots(dp_id)
+                            dps.append(dp)
+
+                for site in slow_sites_ordered:
+                    print "Checking if slow site: %s is in the list of pilots ..." % site
+                    for dp in dps:
+                        if dp.resource.split('.')[1] == site:
+                            print "Selecting DP Resource: %s" % dp.resource
+                            return dp
+                        else:
+                            print "Not Selecting DP Resource: %s" % dp.resource
+
+            #
+            # Fallback to random selection
+            #
+
         elif sel == SELECTION_RELIABLE:
             if not du.description.size:
                 raise Exception("Size not specified in DU")

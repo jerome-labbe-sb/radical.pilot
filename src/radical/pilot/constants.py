@@ -79,6 +79,7 @@ SKIP_FAILED    = 'SkipFailed'     # Don't stage out files if tasks failed
 SELECTION_RANDOM    = 'random'
 SELECTION_RELIABLE  = 'reliable'
 SELECTION_FAST      = 'fast'
+SELECTION_SLOW      = 'slow'
 SELECTION_PREFERRED = 'preferred'
 SELECTION_DEFAULT   = SELECTION_RANDOM
 
