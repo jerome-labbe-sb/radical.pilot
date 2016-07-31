@@ -455,8 +455,10 @@ class PilotDataScheduler(Scheduler):
     #
     def _select_dp(self, du, direction, cu_resource=None):
 
-        print "Selecting DP for %s." % direction
-        print "DU: %s available on DP_ID's: %s" % (du.uid, du.pilot_ids)
+        if direction == DIRECTION_INPUT:
+            print "Input DU %s selecting from available DP_ID's: %s" % (du.uid, du.pilot_ids)
+        else:
+            print "Output DU %s selection from DP_ID's: %s" % (du.uid, du.pilot_ids)
 
         sel = du.description.selection
 
