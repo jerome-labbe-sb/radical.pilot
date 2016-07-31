@@ -835,7 +835,7 @@ class UnitManager(object):
         for ud in unit_descriptions :
 
             u = DataUnit.create(unit_description=ud, unit_manager_obj=self, local_state=SCHEDULING)
-            u._pilot_ids = [p.uid for p in data_pilots]
+            u._pilot_ids = data_pilots
             u._existing = existing
             units.append(u)
 
