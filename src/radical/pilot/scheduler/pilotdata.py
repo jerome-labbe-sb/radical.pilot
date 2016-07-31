@@ -490,7 +490,7 @@ class PilotDataScheduler(Scheduler):
 
         elif sel == SELECTION_FAST:
             if not du.description.size:
-                raise Exception("Size not specified in DU")
+                raise Exception("Size not specified in DU %s." % du.description)
 
             def get_fast(matrix, source, size):
 
