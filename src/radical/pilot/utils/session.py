@@ -149,7 +149,11 @@ def fetch_profiles (sid, dburl=None, client=None, tgt=None, access=None,
                 continue
 
         # If we dont have a tarball (for whichever reason), fetch individual profiles
-        profiles = sandbox.list('*.prof')
+        try:
+            profiles = sandbox.list('*.prof')
+        except saga.NoSuccess:
+            logger.report.error("No profiles for pilot %s-%s." % (sid, pilot['_id']))
+            profiles = []
 
         for prof in profiles:
 
