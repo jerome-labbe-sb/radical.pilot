@@ -43,13 +43,9 @@ DIRECTION_OUTPUT = 'direction_output'
 #
 # OSG CONFIG
 #
-OSG_CONFIG_DIR = '/Users/mark/osg-experiments/etc'
 PREFERRED_SES = 'preferred_ses.json'
 RELIABILITY_CE2SE = 'reliability_ce2se.json'
 PERFORMANCE_CE2SE = 'performance_ce2se.json'
-
-
-
 
 
 # -----------------------------------------------------------------------------
@@ -88,19 +84,26 @@ class PilotDataScheduler(Scheduler):
         # make sure the UM notifies us on all unit state changes
         manager.register_callback (self._unit_state_callback)
 
+
     def _read_configs(self):
 
-        f = open(os.path.join(OSG_CONFIG_DIR, PREFERRED_SES))
+        osg_config_dir = os.getenv('RADICAL_PILOT_OSG_CONFIG_DIR')
+
+        if not osg_config_dir:
+            raise Exception("RADICAL_PILOT_OSG_CONFIG_DIR not set!")
+
+        f = open(os.path.join(osg_config_dir, PREFERRED_SES))
         self._preferred_ses = json.load(f)
         f.close()
 
-        f = open(os.path.join(OSG_CONFIG_DIR, RELIABILITY_CE2SE))
+        f = open(os.path.join(osg_config_dir, RELIABILITY_CE2SE))
         self._reliable_ses = json.load(f)
         f.close()
 
-        f = open(os.path.join(OSG_CONFIG_DIR, PERFORMANCE_CE2SE))
+        f = open(os.path.join(osg_config_dir, PERFORMANCE_CE2SE))
         self._fast_ses = json.load(f)
         f.close()
+
 
     # -------------------------------------------------------------------------
     #
