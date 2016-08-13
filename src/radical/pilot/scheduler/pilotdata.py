@@ -719,7 +719,10 @@ class PilotDataScheduler(Scheduler):
                             print "cu scheduler - du(s): %s" % ud.input_data
 
                             # Get all the DU's for the DU-ID's provided in ud.input_data
-                            dus = self.manager.get_data_units(ud.input_data)
+                            if ud.input_data:
+                                dus = self.manager.get_data_units(ud.input_data)
+                            else:
+                                dus = []
 
                             # Iterate over all input DU's
                             for du in dus:
@@ -742,7 +745,10 @@ class PilotDataScheduler(Scheduler):
                                     unit.description.input_staging.extend(sd)
 
                             # Get all the DU's for the DU-ID's provided in ud.output_data
-                            dus = self.manager.get_data_units(ud.output_data)
+                            if ud.output_data:
+                                dus = self.manager.get_data_units(ud.output_data)
+                            else:
+                                dus = []
 
                             # Iterate over all output DU's
                             for du in dus:
